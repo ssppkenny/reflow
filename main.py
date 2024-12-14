@@ -6,9 +6,10 @@ from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.logger import Logger
 from kivy.properties import ListProperty, NumericProperty
+
 # import rlsafast
 from kivy.uix.behaviors import ButtonBehavior
-from kivymd.uix.behaviors import TouchBehavior 
+from kivymd.uix.behaviors import TouchBehavior
 
 import kivy
 import utils
@@ -29,9 +30,11 @@ import reflow
 
 files_path = ""
 
+
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
+
 
 class Root(FloatLayout, TouchBehavior):
     loadfile = ObjectProperty(None)
@@ -55,8 +58,7 @@ class Root(FloatLayout, TouchBehavior):
 
     def show_load(self):
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-        self._popup = Popup(title="Load file", content=content,
-                            size_hint=(0.9, 0.9))
+        self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
     def add(self):
@@ -71,9 +73,9 @@ class Root(FloatLayout, TouchBehavior):
         else:
             img = self.load_pdf(self.pageno, self.filename, page_width)
         data = BytesIO()
-        img.save(data, format='png')
+        img.save(data, format="png")
         data.seek(0)
-        im = CoreImage(BytesIO(data.read()), ext='png')
+        im = CoreImage(BytesIO(data.read()), ext="png")
         self.ids.image.texture = im.texture
         self.dismiss_popup()
 
@@ -104,7 +106,7 @@ class Root(FloatLayout, TouchBehavior):
                 self.pageno += 1
                 self.update(True)
             else:
-                self.pageno -= (1 if self.pageno > 0 else 0)
+                self.pageno -= 1 if self.pageno > 0 else 0
                 self.update(True)
         self.locked = False
 
@@ -130,15 +132,15 @@ class Root(FloatLayout, TouchBehavior):
         if self.reflowed:
             new_image = reflow.reflow(self.img)
             data = BytesIO()
-            new_image.save(data, format='png')
+            new_image.save(data, format="png")
             data.seek(0)
-            im = CoreImage(BytesIO(data.read()), ext='png')
+            im = CoreImage(BytesIO(data.read()), ext="png")
             self.ids.image.texture = im.texture
         else:
             data = BytesIO()
-            self.img.save(data, format='png')
+            self.img.save(data, format="png")
             data.seek(0)
-            im = CoreImage(BytesIO(data.read()), ext='png')
+            im = CoreImage(BytesIO(data.read()), ext="png")
             self.ids.image.texture = im.texture
 
 
@@ -146,10 +148,10 @@ class Editor(App):
     pass
 
 
-Factory.register('Root', cls=Root)
-Factory.register('LoadDialog', cls=LoadDialog)
+Factory.register("Root", cls=Root)
+Factory.register("LoadDialog", cls=LoadDialog)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = Editor()
     app.run()

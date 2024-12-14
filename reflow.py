@@ -7,9 +7,6 @@ import utils
 from functools import reduce
 from dataclasses import dataclass
 import cv2
-# import rlsafast
-##from rlsa_python.rlsa import RLSA
-# from rlsamod import rlsa
 from rlsa import rlsa
 
 
@@ -24,25 +21,28 @@ class FlowItem:
 
 
 def find_rects(img):
-    numLabels, labels, stats, centroids = cv2.connectedComponentsWithStats(img, 8, cv2.CV_32S)
+    numLabels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+        img, 8, cv2.CV_32S
+    )
     rects = []
     for i in range(1, numLabels):
         x = stats[i, cv2.CC_STAT_LEFT]
         y = stats[i, cv2.CC_STAT_TOP]
         w = stats[i, cv2.CC_STAT_WIDTH]
         h = stats[i, cv2.CC_STAT_HEIGHT]
-        rects.append((x, x+w, y, y+h))
+        rects.append((x, x + w, y, y + h))
     return rects
 
 
 def get_baselines(new_lines):
     baselines = []
     for i in range(len(new_lines)):
-        freqs , vals = np.histogram([nl[3] for nl in new_lines[i]])
+        freqs, vals = np.histogram([nl[3] for nl in new_lines[i]])
         ind = np.argmax(freqs)
-        bl = int((vals[ind] + vals[ind+1])/2)
+        bl = int((vals[ind] + vals[ind + 1]) / 2)
         baselines.append(bl)
     return baselines
+
 
 def find_runs(x):
     """Find runs of consecutive items in an array."""
@@ -50,7 +50,7 @@ def find_runs(x):
     # ensure array
     x = np.asanyarray(x)
     if x.ndim != 1:
-        raise ValueError('only 1D array supported')
+        raise ValueError("only 1D array supported")
     n = x.shape[0]
 
     # handle empty array
@@ -84,18 +84,18 @@ def flow_step(new_w, indent_width, indents, state):
             d[line_counter].append(b)
             d_indents[line_counter] = True
             indents_processed[b.linenumber] = True
-            state[0] = 2*indent_width + b.width
+            state[0] = 2 * indent_width + b.width
         else:
-            if w+b.width <= (new_w - indent_width):
+            if w + b.width <= (new_w - indent_width):
                 d[line_counter].append(b)
                 state[0] += b.width
                 if indents[b.linenumber] == 2:
-                    if i < len(fi)-2:
-                        next_item = fi[i+2]
+                    if i < len(fi) - 2:
+                        next_item = fi[i + 2]
                         if next_item.linenumber > b.linenumber:
                             line_counter += 1
                             state[2] = line_counter
-                            state[0] = 2*indent_width
+                            state[0] = 2 * indent_width
                             d_indents[line_counter] = True
                             indents_processed[next_item.linenumber] = True
             else:
@@ -110,15 +110,15 @@ def flow_step(new_w, indent_width, indents, state):
 
 
 def remove_defects(img_gray):
+    img_gray = img_gray.copy()
     _, img_i = cv2.threshold(img_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 
     rects = find_rects(img_i)
-    h = np.median([r[3]-r[2] for r in rects])
+    h = np.median([r[3] - r[2] for r in rects])
 
     img_b = cv2.bitwise_not(img_i)
     img_b = np.int32(img_b)
-    # H_V = rlsa(img_b, int(4*h))
-    H_V = rlsa(img_b, True, True, int(4*h))
+    H_V = rlsa(img_b, True, True, int(4 * h))
 
     H_V = np.int8(cv2.bitwise_not(H_V))
 
@@ -129,9 +129,14 @@ def remove_defects(img_gray):
         y = stats[i, cv2.CC_STAT_TOP]
         w = stats[i, cv2.CC_STAT_WIDTH]
         h = stats[i, cv2.CC_STAT_HEIGHT]
-        big_rects.append((x, x+w, y, y+h))
+        big_rects.append((x, x + w, y, y + h))
 
-    to_remove = [br for br in big_rects if  (br[1]-br[0]) / (br[3] - br[2])  > 4 or (br[3]-br[2]) / (br[1] - br[0])  > 4 ]
+    to_remove = [
+        br
+        for br in big_rects
+        if (br[1] - br[0]) / (br[3] - br[2]) > 4
+        or (br[3] - br[2]) / (br[1] - br[0]) > 4
+    ]
 
     for xmin, xmax, ymin, ymax in to_remove:
         img_gray[ymin:ymax, xmin:xmax] = 255
@@ -142,7 +147,7 @@ def remove_defects(img_gray):
 
 def rotate(pg):
     # get threshold with positive pixels as text
-    imOTSU = cv2.threshold(pg, 0, 1, cv2.THRESH_OTSU+cv2.THRESH_BINARY_INV)[1]
+    imOTSU = cv2.threshold(pg, 0, 1, cv2.THRESH_OTSU + cv2.THRESH_BINARY_INV)[1]
     # get coordinates of positive pixels (text)
     coords = np.column_stack(np.where(imOTSU > 0))
     # get a minAreaRect angle
@@ -156,12 +161,15 @@ def rotate(pg):
     (h, w) = pg.shape
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(pg, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    rotated = cv2.warpAffine(
+        pg, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+    )
     return rotated
+
 
 def prepare_flow(img):
     img_gray = np.asarray(img.convert("L"))
-    # remove scan defects 
+    # remove scan defects
     img_gray = remove_defects(img_gray)
     ## img_gray = rotate(img_gray)
     # label separate components
@@ -171,12 +179,12 @@ def prepare_flow(img):
     w, h = img.size
     d = defaultdict(list)
     for r in rects:
-        if (r[2] != r[3]):
+        if r[2] != r[3]:
             d[(r[2], r[3])].append(r)
     tr = intervaltree.IntervalTree.from_tuples(d.keys())
 
-    heights = np.array([x[3]-x[2] for x in rects])
-    widths = np.array([x[1]-x[0] for x in rects])
+    heights = np.array([x[3] - x[2] for x in rects])
+    widths = np.array([x[1] - x[0] for x in rects])
     mean_h = np.mean(heights)
     mean_w = np.mean(widths)
 
@@ -184,7 +192,7 @@ def prepare_flow(img):
     for i in range(h):
         ints.append(len(tr.at(i)))
 
-    ys = utils.find_peaks(ints, distance=1.5*mean_h)[0]
+    ys = utils.find_peaks(ints, distance=1.5 * mean_h)[0]
 
     all_lines = []
     for y in ys:
@@ -215,7 +223,7 @@ def prepare_flow(img):
     ratios = []
     max_value_args = []
     for line in new_lines:
-        hs = [r[3]-r[2] for r in line]
+        hs = [r[3] - r[2] for r in line]
         m = np.max(hs)
         max_value_args.append(np.argwhere(hs == m)[0][0])
         ratios.append(np.round(np.max(hs) / np.mean(hs), 1))
@@ -228,7 +236,7 @@ def prepare_flow(img):
             x1, x2, y1, y2 = line[max_value_args[i]]
             r = ratios[i]
             coef = 1.1 * common_ratio / r
-            line[max_value_args[i]] = (x1, x2, y2 - int(coef*(y2 - y1)), y2)
+            line[max_value_args[i]] = (x1, x2, y2 - int(coef * (y2 - y1)), y2)
 
     # end detecting
 
@@ -265,22 +273,28 @@ def prepare_flow(img):
             width = xmax - xmin
             if k == 0:
                 left_spaces.append(width)
-            elif k != vlen-2:
-                flow_items.append(FlowItem(xmin, lower, width, height, upper - baseline, i))
+            elif k != vlen - 2:
+                flow_items.append(
+                    FlowItem(xmin, lower, width, height, upper - baseline, i)
+                )
             else:
-                flow_items.append(FlowItem(xmin, lower, int(0.5*mean_w), height, upper - baseline, i))
+                flow_items.append(
+                    FlowItem(
+                        xmin, lower, int(0.5 * mean_w), height, upper - baseline, i
+                    )
+                )
 
     common_left_space, _ = Counter([ls for ls in left_spaces]).most_common(1)[0]
     indents = dict()
     for i, s in enumerate(left_spaces):
-        if abs(s - common_left_space) > 5*mean_w:
+        if abs(s - common_left_space) > 5 * mean_w:
             indents[i] = 2
-        elif abs(s - common_left_space) > 0.3*mean_w:
+        elif abs(s - common_left_space) > 0.3 * mean_w:
             indents[i] = 1
         else:
             indents[i] = 0
     img_gray = Image.fromarray(np.uint8(img_gray))
-    return img_gray, int(5*mean_w), flow_items, w, indents, mean_h
+    return img_gray, int(5 * mean_w), flow_items, w, indents, mean_h
 
 
 def reflow(img):
@@ -292,26 +306,26 @@ def reflow(img):
     line_count = state[2]
     reflowed_lines = state[1]
     d_indents = state[5]
-    newimage = Image.new(mode='RGB', size=(new_w, new_h), color='white')
+    newimage = Image.new(mode="RGB", size=(new_w, new_h), color="white")
 
     y = int(3 * mean_h)
-    line_h = int(3*mean_h)
+    line_h = int(3 * mean_h)
     x = indent_width
 
-    for line_num in range(line_count+1):
+    for line_num in range(line_count + 1):
         reflowed_line = reflowed_lines[line_num]
         for k, s in enumerate(reflowed_line):
             if k == 0 and d_indents.get(line_num, False):
-                x += int(0.2*indent_width)
+                x += int(0.2 * indent_width)
 
             letter_img = img.crop((s.x, s.y, s.x + s.width, s.y + s.height))
             newimage.paste(letter_img, (x, y + line_h + s.baseline - s.height))
             x += s.width
         x = indent_width
         if line_num < line_count:
-            line_to_check = reflowed_lines[line_num+1]
+            line_to_check = reflowed_lines[line_num + 1]
             max_height = np.max([x.height for x in line_to_check])
-            y += int(3 * mean_h) if 3*mean_h > max_height else int(max_height)
+            y += int(3 * mean_h) if 3 * mean_h > max_height else int(max_height)
         else:
             y += int(3 * mean_h)
     return newimage

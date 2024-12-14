@@ -1,5 +1,5 @@
 # How to build
-- unzip libs.zip in utils/lib/linux/x64
+- for Ubuntu run unzip utils/lib/linux/x64/libs.zip -d utils/lib/linux/x64/
 - pixi install
 - pixi shell
 - edit Makefile, set OS and ARCH, for Ubuntu OS=linux, ARCH=x64

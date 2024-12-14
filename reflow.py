@@ -141,7 +141,6 @@ def remove_defects(img_gray):
     for xmin, xmax, ymin, ymax in to_remove:
         img_gray[ymin:ymax, xmin:xmax] = 255
 
-    print(to_remove)
     return img_gray
 
 

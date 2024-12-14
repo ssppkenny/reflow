@@ -13,3 +13,4 @@
 # Navigation
 - Double-click on the right side of a page moves forward
 - Double-click on the left side of a page moves backward
+- Long mouse click - reflow a page

@@ -1,4 +1,7 @@
 # How to build
+- install pixi with command "curl -fsSL https://pixi.sh/install.sh | bash"
+- git clone https://github.com/ssppkenny/reflow.git
+- cd reflow
 - for Ubuntu run unzip utils/lib/linux/x64/libs.zip -d utils/lib/linux/x64/
 - pixi install
 - pixi shell

@@ -2,9 +2,9 @@
 # pixi environments
 .pixi
 *.egg-info
-*.so
 *.dylib
+*.so
 __pycache__
 rlsa/*.so
 djvu_utils/*.so
-utils/*.so
+utils/utils*.so

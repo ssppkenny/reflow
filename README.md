@@ -4,7 +4,7 @@
 - pixi shell
 - edit Makefile, set OS and ARCH, for Ubuntu OS=linux, ARCH=x64
 - run make
-- run python main.py
+- run python main.py (Kivy app)
 
 # To test in a Jupyter notebook
 - jupyter lab

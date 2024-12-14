@@ -6,6 +6,10 @@
 - run make
 - run python main.py
 
+# To test in a Jupyter notebook
+- jupyter lab
+- open Testing.ipynb
+
 # Navigation
 - Double-click on the right side of a page moves forward
 - Double-click on the left side of a page moves backward

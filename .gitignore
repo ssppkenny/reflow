@@ -1,0 +1,10 @@
+
+# pixi environments
+.pixi
+*.egg-info
+*.so
+*.dylib
+__pycache__
+rlsa/*.so
+djvu_utils/*.so
+utils/*.so

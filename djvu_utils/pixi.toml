@@ -1,0 +1,17 @@
+[project]
+authors = ["Sergey Mikhno <sergey.mikhno@galenica.com>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "djvulib"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "3.11.*"
+cython = ">=3.0.11,<4"
+numpy = ">=2.1.1,<3"
+pillow = ">=10.4.0,<11"
+jupyterlab = ">=4.2.5,<5"
+black = ">=24.8.0,<25"

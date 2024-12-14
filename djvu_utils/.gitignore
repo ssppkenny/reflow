@@ -1,0 +1,10 @@
+# pixi environments
+.pixi
+*.egg-info
+*.so
+save
+build
+.ipynb_checkpoints
+.DS_Store
+*.png
+libdjvu

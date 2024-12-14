@@ -1,0 +1,22 @@
+[project]
+authors = ["Sergey Mikhno <sergey.mikhno@galenica.com>"]
+channels = ["conda-forge"]
+description = "Add a short description here"
+name = "reflowproj"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+python = "3.11.*"
+cython = ">=3.0.11,<4"
+black = ">=24.10.0,<25"
+numpy = "1.24.*"
+jupyterlab = ">=4.3.3,<5"
+intervaltree = ">=3.1.0,<4"
+
+[pypi-dependencies]
+opencv-python = "~=4.10.0.84"
+kivy = "~=2.3.0"
+kivymd = "~=1.2.0"

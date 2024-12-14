@@ -1,0 +1,24 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Editors
+.kate-swp
+# Kdev
+xc_exam.kdev4
+.kdev4
+compile_commands.json
+build/
+
+# Distribution / packaging
+dist/
+output/
+*.egg-info/
+
+# Output
+interval_counter/interval_counter
+obj/
+bin/
+
+# Misc
+.ccls-cache/

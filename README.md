@@ -1,5 +1,8 @@
 # How to build
-- unzip libs.zip in utils/lib/linux/x64
+- install pixi with command "curl -fsSL https://pixi.sh/install.sh | bash"
+- git clone https://github.com/ssppkenny/reflow.git
+- cd reflow
+- for Ubuntu run unzip utils/lib/linux/x64/libs.zip -d utils/lib/linux/x64/
 - pixi install
 - pixi shell
 - edit Makefile, set OS and ARCH, for Ubuntu OS=linux, ARCH=x64

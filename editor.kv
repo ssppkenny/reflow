@@ -1,19 +1,35 @@
 #:kivy 1.1.0
+#:import Window kivy.core.window.Window
 
 Root:
-    BoxLayout:
-        orientation: 'vertical'
-
-        BoxLayout:
+    GridLayout:
+        cols: 1
+        ActionBar:
+            pos_hint: {'top': 1}
+            ActionView:
+                use_separator: True
+                ActionPrevious:
+                    id: reflow
+                    title: 'Reflow'
+                    with_previous: False
+                    on_press: root.on_reflow()
+        ScrollView:
+            id: scroll_view
+            do_scroll_y: True
+            do_scoll_x: True
+            size_hint: 1, 1
             Image:
                 id: image
-                src: ''
-        BoxLayout:
-            size_hint_y: None
+                size_hint: 1, 0.95
+                keep_ratio: True
+                width: Window.width
+                pos: 0,0
+        Button:
             height: 50
-            Button:
-                text: 'Load'
-                on_release: root.show_load()
+            text: 'Load'
+            size_hint: 1, 0.1
+            on_release: root.show_load()
+
 
 <LoadDialog>:
     BoxLayout:
@@ -34,4 +50,3 @@ Root:
             Button:
                 text: "Load"
                 on_release: root.load(filechooser.path, filechooser.selection)
-

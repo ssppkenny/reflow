@@ -73,7 +73,7 @@ def find_runs(x):
         return run_values, run_starts, run_lengths
 
 
-def flow_step(new_w, indent_width, indents, state):
+def flow_step(new_w, indent_width, indents, state, zoom_factor):
     indents_processed = dict()
 
     def inner_flow_step(_, b):
@@ -84,11 +84,11 @@ def flow_step(new_w, indent_width, indents, state):
             d[line_counter].append(b)
             d_indents[line_counter] = True
             indents_processed[b.linenumber] = True
-            state[0] = 2 * indent_width + b.width
+            state[0] = 2 * indent_width + int(b.width * zoom_factor)
         else:
-            if w + b.width <= (new_w - indent_width):
+            if w + int(b.width * zoom_factor) <= (new_w - indent_width):
                 d[line_counter].append(b)
-                state[0] += b.width
+                state[0] += int(b.width * zoom_factor)
                 if indents[b.linenumber] == 2:
                     if i < len(fi) - 2:
                         next_item = fi[i + 2]
@@ -102,7 +102,7 @@ def flow_step(new_w, indent_width, indents, state):
                 line_counter += 1
                 state[2] = line_counter
                 d[line_counter].append(b)
-                state[0] = indent_width + b.width
+                state[0] = indent_width + int(b.width * zoom_factor)
 
         state[3] += 1
 
@@ -299,16 +299,17 @@ def prepare_flow(img):
 def reflow(img):
     img, indent_width, flow_items, w, indents, mean_h = prepare_flow(img)
     new_w = int(0.8 * w)
+    zoom_factor = 1.5
     state = [indent_width, defaultdict(list), 0, 0, flow_items, dict()]
-    reduce(flow_step(new_w, indent_width, indents, state), flow_items, None)
-    new_h = int((state[2] * 3 + 15) * mean_h)
+    reduce(flow_step(new_w, indent_width, indents, state, zoom_factor), flow_items, None)
+    new_h = int((state[2] * 3 + 15) * mean_h * zoom_factor)
     line_count = state[2]
     reflowed_lines = state[1]
     d_indents = state[5]
     newimage = Image.new(mode="RGB", size=(new_w, new_h), color="white")
 
-    y = int(3 * mean_h)
-    line_h = int(3 * mean_h)
+    y = int(3 * mean_h * zoom_factor) 
+    line_h = int(3 * mean_h * zoom_factor)
     x = indent_width
 
     for line_num in range(line_count + 1):
@@ -318,13 +319,15 @@ def reflow(img):
                 x += int(0.2 * indent_width)
 
             letter_img = img.crop((s.x, s.y, s.x + s.width, s.y + s.height))
-            newimage.paste(letter_img, (x, y + line_h + s.baseline - s.height))
-            x += s.width
+            img_width, img_height = letter_img.size
+            letter_img = letter_img.resize((int(img_width * zoom_factor), int(img_height * zoom_factor)), Image.Resampling.LANCZOS)
+            newimage.paste(letter_img, (x, y + line_h + int(zoom_factor * (s.baseline - s.height))))
+            x += int(s.width * zoom_factor)
         x = indent_width
         if line_num < line_count:
             line_to_check = reflowed_lines[line_num + 1]
             max_height = np.max([x.height for x in line_to_check])
-            y += int(3 * mean_h) if 3 * mean_h > max_height else int(max_height)
+            y += int(3 * mean_h * zoom_factor) if 3 * mean_h > max_height else int(max_height * zoom_factor)
         else:
-            y += int(3 * mean_h)
+            y += int(3 * mean_h * zoom_factor)
     return newimage

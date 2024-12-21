@@ -3,25 +3,22 @@ from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
 from kivy.properties import ObjectProperty
+from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.logger import Logger
 from kivy.properties import ListProperty, NumericProperty
-
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.scrollview import ScrollView
 # import rlsafast
-from kivy.uix.behaviors import ButtonBehavior
 from kivymd.uix.behaviors import TouchBehavior
+from kivy.uix.image import Image as KImage
+from kivymd.app import MDApp
 
-import kivy
 import utils
 from io import BytesIO
-from kivy import platform
-from urllib.parse import unquote
 
 from kivy.core.window import Window
-from kivy.uix.gridlayout import GridLayout
-import kivy.uix.image
-from PIL import Image, ImageOps
-from kivy.clock import Clock
+from PIL import Image
 from kivy.core.image import Image as CoreImage
 
 import mydjvulib
@@ -75,13 +72,19 @@ class Root(FloatLayout, TouchBehavior):
         data = BytesIO()
         img.save(data, format="png")
         data.seek(0)
+        w, h = img.size
         im = CoreImage(BytesIO(data.read()), ext="png")
         self.ids.image.texture = im.texture
+        self.ids.image.size_hint = None, None
+        self.ids.image.height = h
+        self.ids.image.width = w
+        self.ids.scroll_view.size_hint = None, None
+        
+        # Window.size = img.size
+        self.img = img
         self.dismiss_popup()
 
-    def on_long_touch(self, touch, *args):
-        if touch.is_double_tap:
-            return
+    def on_reflow(self):
         if not self.locked:
             self.locked = True
             self.reflowed = not self.reflowed
@@ -131,17 +134,31 @@ class Root(FloatLayout, TouchBehavior):
                 self.img = self.load_pdf(self.pageno, self.filename, page_width)
         if self.reflowed:
             new_image = reflow.reflow(self.img)
+            new_image.save("test.png")
             data = BytesIO()
             new_image.save(data, format="png")
             data.seek(0)
             im = CoreImage(BytesIO(data.read()), ext="png")
             self.ids.image.texture = im.texture
+            w, h = new_image.size
+            self.ids.image.height = h
+            self.ids.image.width = w
+            self.ids.image.size_hint = None, None
+            self.ids.scroll_view.width = self.ids.image.width
+            # self.ids.scroll_view.scroll_y = 0.7
+            # self.ids.scroll_view.scroll_to(self.ids.image)
+            # self.ids.image.pos = [0, -200]
         else:
             data = BytesIO()
             self.img.save(data, format="png")
             data.seek(0)
+            w, h = self.img.size
             im = CoreImage(BytesIO(data.read()), ext="png")
             self.ids.image.texture = im.texture
+            self.ids.image.size_hint = None, None
+            self.ids.image.height = h
+            self.ids.image.width = w
+            self.ids.scroll_view.size_hint = None, None
 
 
 class Editor(App):
